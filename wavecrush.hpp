@@ -4,6 +4,10 @@
 #include <map>
 #include <iostream>
 #include <sstream>
+#include <filesystem> //c++17
+
+
+namespace fs = std::filesystem;
 
 
 class Wave_Crush {
@@ -20,11 +24,11 @@ public:
 	} crush_parameters;
 
 
-	std::vector<unsigned char> read_file(const char*); 
-	bool write_file(const char*, std::vector<unsigned char>);
+	std::vector<unsigned char> read_file(fs::path); 
+	bool write_file(fs::path, std::vector<unsigned char>&);
 
-	void parse(const char*);
-
+	void parse(fs::path);
+    std::vector<unsigned char> crusher();
 
 	void parse_old(std::vector<unsigned char>);
 	std::vector<unsigned char> crush(struct crush_parameters);
@@ -48,9 +52,20 @@ public:
 	std::vector<unsigned char> get_left_channel_samples();              
     std::vector<unsigned char> get_right_channel_samples();                  
 
+    fs::path get_in_path();
+    fs::path get_crushed_path();
+    fs::path set_in_path(std::string);
+    fs::path set_in_path(char*);
+    fs::path set_crushed_path(std::string);
+    fs::path set_crushed_path(char*);
+
+    
 
 
 private:
+
+fs::path in_path;
+fs::path crushed_path;
 
 //NOT NEEDED ANYMORE
 
@@ -75,15 +90,19 @@ std::vector<unsigned char> bytes_after_sample_data{};
     int leftover_size{0};
     int real_junk_size{0};
     //NOT NEEDED ANYMORE
+    
 
 
     std::map< std::string,std::pair<int,unsigned int>> 
     collect_chunk_info(std::ifstream&, std::streampos&, std::vector<std::string>&);
-    bool parse_fmt(std::ifstream&,std::map< std::string,std::pair<int,unsigned int>>);
+    int parse_fmt(std::ifstream&);
+    int read_samples(std::ifstream&);
+   
 
 
     std::string read_x_bytes_to_string(std::ifstream&,int);
-    char* read_x_bytes_to_char_array(std::ifstream&,int);
+    std::vector<unsigned char> read_x_bytes_to_vector(std::ifstream&,int);
+    void read_and_fill_x_bytes_to_vector(const std::vector<unsigned char>& ,std::ifstream&, int , int );
 
     unsigned int pack4chars_ltob(char, char, char, char);
 	unsigned int pack3chars_ltob(char, char, char);
@@ -95,7 +114,7 @@ std::vector<unsigned char> bytes_after_sample_data{};
 	//crush algorithms
 	//
 	
-	std::vector<unsigned char> algo1();
+
 
 	//
 	struct header {
@@ -147,5 +166,8 @@ std::vector<unsigned char> bytes_after_sample_data{};
     "slnt","fact","plst","labl","note",
     "adtl","ltxt","file"};
     std::map< std::string,std::pair<int,unsigned int> > chunk_info; 
+
+    //
+    std::vector<std::string> insertation_order;
 
 };

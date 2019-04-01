@@ -9,7 +9,8 @@
 #include <string>
 #include <cstring>
 #include <vector>
-
+#include <filesystem> //c++17
+#include <regex>
 #include "wavecrush.hpp"
 
 using namespace std;
@@ -20,8 +21,16 @@ int main( int argc, char* argv[] ) {
    Wave_Crush wc; 
    // std::vector<unsigned char> file_in_memory = wc.read_file(argv[1]);
    // you can organise the arguments array later.
-   
-   wc.parse(argv[1]);
+  
+   wc.set_in_path( argv[1] );
+   cout << wc.get_in_path() << endl;
+   wc.parse(wc.get_in_path());
+
+   auto crushed_samples = wc.crusher();
+
+
+   wc.write_file(wc.get_crushed_path(),crushed_samples);
+
    // wc.parse(file_in_memory);
    
    
@@ -45,7 +54,8 @@ int main( int argc, char* argv[] ) {
    // // wc.crush(file_in_memory);
 
    //  wc.write_file("/Users/vallahiboyle/Desktop/wavecrush/invtry.wav", wc.get_all_samples());
-  
+ 
+
     return 0;
 
 }
