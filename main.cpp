@@ -3,60 +3,34 @@
 //  Created by Ali Somay. 
 // 
 
-#include <iostream>
-
-
-#include <string>
-#include <cstring>
-#include <vector>
-#include <filesystem> //c++17
-#include <regex>
-#include "wavecrush.hpp"
-
-using namespace std;
-
+#include "path_manager.hpp"
+#include "parsed_data.hpp"
+#include "wav_parser.hpp"
+#include "wav_crusher.hpp"
 
 int main( int argc, char* argv[] ) {
+   
+   if( argc < 2 ){
+		throw std::invalid_argument( "Please enter a file path." );
+   }
 
-   Wave_Crush wc; 
-   // std::vector<unsigned char> file_in_memory = wc.read_file(argv[1]);
-   // you can organise the arguments array later.
-  
-   wc.set_in_path( argv[1] );
-   cout << wc.get_in_path() << endl;
-   wc.parse(wc.get_in_path());
+   Path_Manager path_manager(argv[1]);
+   Parsed_Data parsed_data;  
 
-   auto crushed_samples = wc.crusher();
+   
+   Wav_Parser wav_parser(path_manager,parsed_data);
 
-
-   wc.write_file(wc.get_crushed_path(),crushed_samples);
-
-   // wc.parse(file_in_memory);
+   wav_parser.parse();
+   parsed_data.report();
    
    
-   cout << "FILE SIZE : " << wc.get_overall_size() << " BYTES. ( +8 to include \"RIFF\" and size bytes in the size. )" <<  endl;              
-   cout << "LENGTH OF FMT : " << wc.get_length_of_fmt() << " BYTES. ( +8 to include \"fmt \" and size bytes in the size. )" <<  endl;                              
-   cout << "ENCODING : " << wc.get_format_type() << endl;                   
-   cout << "CHANNELS : " <<  wc.get_channels() << endl;                        
-   cout << "SAMPLE RATE (blocks per second) : " <<  wc.get_sample_rate() << endl;                    
-   cout << "BYTE RATE (SampleRate * NumChannels * BitsPerSample/8) : " <<  wc.get_byterate() << endl;                       
-   cout << "BLOCK ALIGN (NumChannels * BitsPerSample/8) : " << wc.get_block_align() << endl;                   
-   cout << "BITS PER SAMPLE : " << wc.get_bits_per_sample() << " BITS." << endl;                
-   // cout << "SIZE OF THE JUNK CHUNK : " << wc.get_junk_size() << " BYTES. ( +8 to include \"JUNK\" and size bytes in the size. )" << endl;
-   cout << "SIZE OF THE DATA CHUNK : " << wc.get_data_size() << " BYTES. ( +8 to include \"data\" and size bytes in the size. )" << endl;                       
-   cout << endl;
-   // cout << "--INFORMATION ABOUT STRIPPED DATA CHUNK--" << endl;
-   // cout << endl;
-   // cout << "BYTESIZE OF ALL SAMPLES : " << wc.get_all_samples_size() << " BYTES." << endl;
-   // cout << "BYTESIZE OF LEFT CHANNEL SAMPLES : " << wc.get_left_channel_samples_size() << " BYTES." << endl;
-   // cout << "BYTESIZE OF RIGHT CHANNEL SAMPLES : " << wc.get_right_channel_samples_size() << " BYTES." << endl;
+   Wav_Crusher wav_crusher(path_manager,parsed_data); 
+   
+   auto crushed_samples = wav_crusher.range_shuffler(parsed_data.get_all_samples());
+   
+   wav_parser.write_file(crushed_samples);
 
-   // // wc.crush(file_in_memory);
-
-   //  wc.write_file("/Users/vallahiboyle/Desktop/wavecrush/invtry.wav", wc.get_all_samples());
- 
-
-    return 0;
+   return 0;
 
 }
 
