@@ -17,10 +17,10 @@ private:
 public:
 
 	Path_Manager() = default;
-	Path_Manager(char* path) : in_path(path) {
+	Path_Manager(std::string path) : in_path(path) {
     
     if( !fs::exists(in_path) ){
-		throw std::invalid_argument( "This file path is not valid or accessible." );
+		throw std::invalid_argument( "This file path is not valid or accessible. There is also a possibility that you havent gave the program enough arguments." );
 	}
     
     crushed_path = std::regex_replace(in_path.filename().string(), std::regex(".wav"), "_crushed.wav");
