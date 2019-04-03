@@ -13,6 +13,8 @@ struct Parameter_Structs {
 	int mul = 1;
 	std::string op = "div";
 	int ms = 1000; 
+	int so = 1;
+	int ss = 1;
 
 
 	} rangeshuffler_params;
