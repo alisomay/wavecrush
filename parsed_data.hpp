@@ -33,7 +33,7 @@ class Parsed_Data {
 		unsigned char SubFormat[16]; 				   //16 GUID, including the data format code
 
 
-	    unsigned char data_chunk_header[4]{0,0,0,0};        // DATA string or FLLR string
+	    unsigned char data_chunk_header[4]{'d','a','t','a'};        // DATA string or FLLR string
 	    unsigned int data_size{0};                     // NumSamples * NumChannels * BitsPerSample/8 - size of the next chunk that will be read
 	    
 
