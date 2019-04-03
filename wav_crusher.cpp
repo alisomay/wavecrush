@@ -3,16 +3,7 @@
 
 std::vector<unsigned char> Wav_Crusher::range_shuffler(std::vector<unsigned char> samples){
     
-
-
 	#define PRM parameter_structs.rangeshuffler_params
-
-	std::cout << PRM.mode<<std::endl;
-	std::cout << PRM.op<<std::endl;
-	std::cout << PRM.algorithm<<std::endl;
-	std::cout << PRM.div<<std::endl;
-	std::cout << PRM.mul<<std::endl;
-	std::cout << PRM.ms<<std::endl;
     
     auto sr = parsed_data.get_sample_rate();
     
@@ -42,11 +33,6 @@ std::vector<unsigned char> Wav_Crusher::range_shuffler(std::vector<unsigned char
 	default :  
 		goto defcase;
 	}
-    std::cout <<std::endl;
-    std::cout <<std::endl;
-    std::cout << offset << std::endl;
-    std::cout <<std::endl;
-    std::cout <<std::endl;
 
     //Slice
 
@@ -78,18 +64,37 @@ std::vector<unsigned char> Wav_Crusher::range_shuffler(std::vector<unsigned char
 
     }
     else if(PRM.algorithm == "swap"){
-        for(std::vector<std::vector<unsigned char>>::iterator it = sliced_samps.begin(); it < sliced_samps.end(); it=it+2) { 
-    		std::swap(*it,*(it+1)); 
+ 		
+ 		//I am not sure if i will include clipping i will think about it maybe simplify later
+
+    	auto countss = 1;
+    	auto countso = 1;
+        for(std::vector<std::vector<unsigned char>>::iterator it = sliced_samps.begin(); it < sliced_samps.end(); ) { 
+
+        	if(it+PRM.so >= sliced_samps.end()){
+	        	std::swap(*it,*(sliced_samps.end() - countso));
+	        	countso++;
+            }
+            else{
+            	std::swap(*it,*(it+PRM.so));
+            }
+			if(it+PRM.ss >= sliced_samps.end()){
+	        	it += countss;
+	        	countss++;
+            }
+            else{
+            	it+=PRM.ss;
+            }
+
     	}
 
 	}
     else{
        //defaultcase
-       std::reverse( sliced_samps.begin(),sliced_samps.end() );
+       std::random_shuffle( sliced_samps.begin(),sliced_samps.end() );
 
     }
-
-    
+   
     //consolidate
     std::vector<unsigned char> s;
 	size_t total_size{ 0 };
@@ -98,24 +103,16 @@ std::vector<unsigned char> Wav_Crusher::range_shuffler(std::vector<unsigned char
 	    total_size += items.size();
 	}
 	s.reserve(total_size);
-	std::cout << total_size << "   " << samples.size() << std::endl;
+	
+	std::cout << std::endl;
+	std::cout << "sample quantity of the original file : " << samples.size() << std::endl;
+	std::cout << "sample quantity of the crushed file : " << total_size << std::endl;
+    std::cout << std::endl;
+	
+	
 	for (auto& items: sliced_samps){    
     	std::move(items.begin(), items.end(), std::back_inserter(s));
 	}
-
-
-    /*for(std::vector<unsigned char>::iterator it = samples.begin(); it != samples.end();) {
-       
-
-       if(it < samples.end()){
-       std::random_shuffle(it+std::round(sample_rate/12),it+std::round(sample_rate/6));
-
-       if(it < samples.end()){
-       it+=std::round(sample_rate/6); 
-       }
-       }
-
-    }*/
 
 
    	return s;
