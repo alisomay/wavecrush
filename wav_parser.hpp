@@ -44,7 +44,6 @@ public:
     "slnt","fact","plst","labl","note",
     "adtl","ltxt","file"};
 
-    std::vector<unsigned char> read_file(); 
     bool write_file(std::vector<unsigned char>&);
 
     void parse();

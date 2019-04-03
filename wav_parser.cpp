@@ -96,35 +96,6 @@ void Wav_Parser::read_and_fill_x_bytes_to_vector(const std::vector<unsigned char
 
 }
 
-std::vector<unsigned char> Wav_Parser::read_file() {
-    
-    in_path = path_manager.get_in_path();
-
-
-    // open the file:
-    std::ifstream file(in_path, std::ios::binary);
-
-    // Stop eating new lines in binary mode!!!
-    file.unsetf(std::ios::skipws);
-
-    // get its size:
-    std::streampos file_size;
-
-    file.seekg(0, std::ios::end);
-    file_size = file.tellg();
-    file.seekg(0, std::ios::beg);
-
-    // reserve capacity
-    std::vector<unsigned char> vec;
-    vec.reserve(file_size);
-
-    // read the data:
-    vec.insert(vec.begin(),
-               std::istream_iterator<unsigned char>(file),
-               std::istream_iterator<unsigned char>());
-
-    return vec;
-}
 
 void Wav_Parser::parse(){
 
@@ -149,7 +120,7 @@ void Wav_Parser::parse(){
 	
 	for(auto elem : parsed_data.insertation_order){
 
-		std::cout << parsed_data.chunk_info.find(elem)->first << " " << parsed_data.chunk_info.find(elem)->second.first << " " << parsed_data.chunk_info.find(elem)->second.second << " " << std::endl;
+		std::cout << parsed_data.chunk_info.find(elem)->first << " index : " << parsed_data.chunk_info.find(elem)->second.first << " size : " << parsed_data.chunk_info.find(elem)->second.second << " bytes." << std::endl;
 	}
 
     std::cout << std::endl;
@@ -161,14 +132,6 @@ void Wav_Parser::parse(){
 
 bool Wav_Parser::write_file(std::vector<unsigned char>& crushed_samples){
 
-	//reconstruct file from the bits that you have restored
-	//and put the new data chunk instead of the old one
-	//if the size of the datachunk change, change the info in the file 
-	//accordingly
-
-    //maybe no vector in the middle and check and write to file directly? 
-    //make a copy and modify?
-   
 
 	crushed_path = path_manager.get_crushed_path();
 
@@ -178,23 +141,35 @@ bool Wav_Parser::write_file(std::vector<unsigned char>& crushed_samples){
     //here do the format changes
     
     //here overwrite the data part 
-    std::cout << parsed_data.chunk_info.find("data")->second.first+8 << std::endl;
+    //std::cout << parsed_data.chunk_info.find("data")->second.first+8 << std::endl;
     crushed_wav.seekp(parsed_data.chunk_info.find("data")->second.first+8, std::ios::beg);
 
-    auto pos = crushed_wav.tellg();
-    std::cout << "The file pointer is now at location " << pos << std::endl;
+    //auto pos = crushed_wav.tellg();
+    //std::cout << "The file pointer is now at location " << pos << std::endl;
     //business logic for different cases
     
-    if(crushed_samples.size() != parsed_data.chunk_info.find("data")->second.second){
-    	 std::cout <<  "NOOOOOOOO" << std::endl;
+    if(crushed_samples.size() < parsed_data.chunk_info.find("data")->second.second){
+    	 
+    	 std::cout <<  "the data size of the crushed file is different from the original file" << std::endl;
+    	 
+    	 auto diff = parsed_data.chunk_info.find("data")->second.second - crushed_samples.size();
+
+    	 crushed_wav.seekp(parsed_data.chunk_info.find("RIFF")->second.first+4, std::ios::beg);
+		 auto new_filesize = unpack_unsigned_int_to_chars_btol_4bytes(parsed_data.header.overall_size - diff);
+		 crushed_wav.write(reinterpret_cast<const char*>(&new_filesize[0]), new_filesize.size()*sizeof(unsigned char));
+    	 
+    	 crushed_wav.seekp(parsed_data.chunk_info.find("data")->second.first+4, std::ios::beg);
+		 auto new_datasize = unpack_unsigned_int_to_chars_btol_4bytes(crushed_samples.size());
+		 crushed_wav.write(reinterpret_cast<const char*>(&new_datasize[0]), new_datasize.size()*sizeof(unsigned char));
+    	 
+    	 crushed_wav.seekp(parsed_data.chunk_info.find("data")->second.first+8, std::ios::beg);
+    	 crushed_wav.write(reinterpret_cast<const char*>(&crushed_samples[0]), crushed_samples.size()*sizeof(unsigned char));
+    	 return 0;
+    
     }
-    else{
 
     crushed_wav.write(reinterpret_cast<const char*>(&crushed_samples[0]), crushed_samples.size()*sizeof(unsigned char));
     crushed_wav.close();
-
-	}
-
 	return 0;
 };
 
@@ -316,10 +291,11 @@ int Wav_Parser::parse_fmt(std::ifstream& file){
 
 int Wav_Parser::read_samples(std::ifstream& file){
 
-parsed_data.data_chunk.all_samples = read_x_bytes_to_vector(file,parsed_data.chunk_info.find("data")->second.second);
+parsed_data.header.data_size = parsed_data.chunk_info.find("data")->second.second;
 
+parsed_data.data_chunk.all_samples = read_x_bytes_to_vector(file,parsed_data.header.data_size);
 
- //    //seperate channels for further modification
+    //seperate channels for further modification
     if(parsed_data.header.channels == 2){
     auto i = parsed_data.data_chunk.all_samples.begin();
     
