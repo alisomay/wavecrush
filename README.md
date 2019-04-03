@@ -13,12 +13,12 @@ is located.
 
   - Though the app works ok it is not mature yet but feel free to try or contribute,
   detailed comments in code and detailed readme will come soon.
-  - There is a coinsise documentation printed when you `--help`
+  - There is a concise documentation printed when you `--help`
 
 # Build
   
   - Builds ok with `g++ version 9.0.1` which i have used in Mac OS X Sierra.
-  - I use the latest version of gcc, and i installed it from homebrew. `brew install gcc --HEAD`
+  - I use the latest version of gcc, and i installed it with homebrew. `brew install gcc --HEAD`
   ```sh
   g++ -Wall -std=c++1z ./*.cpp -o wavecrush
   ```
