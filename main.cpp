@@ -56,10 +56,11 @@ int main( int argc, char* argv[] ) {
     }
 	if (result.count("help"))
     {
+
       std::cout << std::endl;  
-      std::cout << "wavecrush operates on WAV files. It takes in a file, runs the algorithms which user choses"<< std::endl;
-      std::cout << "on the \"data\" chunk of the file and writes the modified file to the folder which the program" << std::endl;
-      std::cout << "is located." << std::endl;
+      std::cout << "wavecrush is a command line app which operates on WAV files." << std::endl;
+      std::cout << "It takes in a file, runs the algorithms chosen by the user on the \"data\" chunk of the file and"<< std::endl;
+      std::cout << "writes a new WAV file with the modified \"data\" chunk." << std::endl;
       std::cout << std::endl;
       std::cout << options.help({"", "operation"}) << std::endl;
       exit(0);
@@ -73,6 +74,7 @@ if (result.count("input"))
 		if ("rangeshuffler" == result["processor"].as<std::string>())
 		{
 			parameter_structs.rangeshuffler_params.algorithm = result["algorithm"].as<std::string>();
+			
 			if(parameter_structs.rangeshuffler_params.algorithm == "swap")	{
 				if (result.count("so")){
 					parameter_structs.rangeshuffler_params.div = result["so"].as<int>();
@@ -82,6 +84,7 @@ if (result.count("input"))
 
 				}
 			}
+			
 			if (result.count("mode")){
 
 				parameter_structs.rangeshuffler_params.mode = result["mode"].as<int>();
